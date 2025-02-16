@@ -239,9 +239,13 @@
             document.getElementById("submitBtn").style.display = "block";
         }
 
-        function submitForm() {
+    function submitForm() {
+        isGoogleFormOpen((isOpen) => {
+            if (!isOpen) {
+                alert("尚未開放簽到");
+                return;
+            }
 
-            
             const today = new Date().toDateString();
             const lastSubmissionIP = localStorage.getItem('lastSubmissionIP');
             const lastSubmissionDate = localStorage.getItem('lastSubmissionDate');
@@ -268,8 +272,8 @@
                 localStorage.setItem('lastSubmissionDate', today);
                 window.location.href = googleSheetURL;
             }).catch(error => console.error("Error submitting form:", error));
-            
-        }
+        });
+    }
 
         function showLocationInstruction() {
             document.getElementById("locationInstruction").innerHTML = 
