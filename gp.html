@@ -238,14 +238,14 @@
             }
 
             const formData = new FormData();
-            formData.append("entry.1299380552", document.getElementById("name").value);
-            formData.append("entry.35946792", document.getElementById("studentID").value);
-            formData.append("entry.1497304119", document.getElementById("latitude").value);
-            formData.append("entry.417639613", document.getElementById("longitude").value);
-            formData.append("entry.1508641572", document.getElementById("visitorIP").value);
-            formData.append("entry.172774444", document.getElementById("browserFingerprint").value);
-
-            fetch("https://docs.google.com/forms/d/e/1FAIpQLScxzZc0GVmTzP_2AYj81A9RwTI8mDdy4QIzH8TpBcPOvIwm6w/formResponse", {
+            formData.append("entry.490049965", document.getElementById("name").value);
+            formData.append("entry.1692379758", document.getElementById("studentID").value);
+            formData.append("entry.12019550", document.getElementById("latitude").value);
+            formData.append("entry.2005083267", document.getElementById("longitude").value);
+            formData.append("entry.1866622812", document.getElementById("visitorIP").value);
+            formData.append("entry.1022288129", document.getElementById("browserFingerprint").value);
+            
+            fetch("https://docs.google.com/forms/d/e/1FAIpQLSfkwuHA72Dd0H90mbAG-2SL5ErBkDO9EAndcgOHy8XtS9hFYQ/formResponse", {
                 method: "POST",
                 body: formData,
                 mode: "no-cors"
