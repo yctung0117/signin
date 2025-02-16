@@ -244,50 +244,37 @@ function isGoogleFormOpen(callback) {
             document.getElementById("submitBtn").style.display = "block";
         }
 
-function submitForm() {
-    const today = new Date().toDateString();
-    const lastSubmissionIP = localStorage.getItem('lastSubmissionIP');
-    const lastSubmissionDate = localStorage.getItem('lastSubmissionDate');
+        function submitForm() {
 
-    // 檢查是否已經提交過表單
-    if (lastSubmissionIP === ipAddress && lastSubmissionDate === today) {
-        alert("此裝置已提交過表單。");
-        return;
-    }
+            
+            const today = new Date().toDateString();
+            const lastSubmissionIP = localStorage.getItem('lastSubmissionIP');
+            const lastSubmissionDate = localStorage.getItem('lastSubmissionDate');
 
-    // 檢查 Google Form 是否開放
-    isGoogleFormOpen(function(isOpen) {
-        if (!isOpen) {
-            document.getElementById("errorSection").innerText = "尚未開放簽到";
-            document.getElementById("errorSection").style.display = "block";
-            return;
+            if (lastSubmissionIP === ipAddress && lastSubmissionDate === today) {
+                alert("此裝置已提交過表單。");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("entry.1299380552", document.getElementById("name").value);
+            formData.append("entry.35946792", document.getElementById("studentID").value);
+            formData.append("entry.1497304119", document.getElementById("latitude").value);
+            formData.append("entry.417639613", document.getElementById("longitude").value);
+            formData.append("entry.1508641572", document.getElementById("visitorIP").value);
+            formData.append("entry.172774444", document.getElementById("browserFingerprint").value);
+
+            fetch("https://docs.google.com/forms/d/e/1FAIpQLScxzZc0GVmTzP_2AYj81A9RwTI8mDdy4QIzH8TpBcPOvIwm6w/formResponse", {
+                method: "POST",
+                body: formData,
+                mode: "no-cors"
+            }).then(() => {
+                localStorage.setItem('lastSubmissionIP', ipAddress);
+                localStorage.setItem('lastSubmissionDate', today);
+                window.location.href = googleSheetURL;
+            }).catch(error => console.error("Error submitting form:", error));
+            
         }
-                // 如果表單開放，繼續提交表單
-        const formData = new FormData();
-        formData.append("entry.1299380552", document.getElementById("name").value);
-        formData.append("entry.35946792", document.getElementById("studentID").value);
-        formData.append("entry.1497304119", document.getElementById("latitude").value);
-        formData.append("entry.417639613", document.getElementById("longitude").value);
-        formData.append("entry.1508641572", document.getElementById("visitorIP").value);
-        formData.append("entry.172774444", document.getElementById("browserFingerprint").value);
-
-        fetch("https://docs.google.com/forms/d/e/1FAIpQLScxzZc0GVmTzP_2AYj81A9RwTI8mDdy4QIzH8TpBcPOvIwm6w/formResponse", {
-            method: "POST",
-            body: formData,
-            mode: "no-cors"
-        })
-        .then(() => {
-            localStorage.setItem('lastSubmissionIP', ipAddress);
-            localStorage.setItem('lastSubmissionDate', today);
-            window.location.href = googleSheetURL;
-        })
-        .catch(error => {
-            console.error("Error submitting form:", error);
-            document.getElementById("errorSection").innerText = "提交表單時發生錯誤";
-            document.getElementById("errorSection").style.display = "block";
-        });
-    });
-}
 
         function showLocationInstruction() {
             document.getElementById("locationInstruction").innerHTML = 
