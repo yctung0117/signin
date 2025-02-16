@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+
+    <script>
+        const googleSheetURL = "https://docs.google.com/spreadsheets/d/1QedTknk7LTItFVuK04o4gk-p4K7IvRFISbdC5s9H3_s/edit?usp=sharing";
+        console.log("Google 試算表 URL:", googleSheetURL);
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交表單</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --primary-dark: #357ABD;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --background: #f8f9fa;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 25px 0;
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        form, .section-card {
+            max-width: 100%;
+            margin: 15px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            #align-items: center;
+            #text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            
+            font-size: 1.2em;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.3s ease;
+            background: var(--primary);
+            color: white;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        #previewSection, #locationInstruction, #errorSection, #selectionSection {
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #previewSection {
+            display: none;
+        }
+
+        #previewSection p {
+            margin: 10px 0;
+        }
+
+        #submitBtn {
+            display: none;
+        }
+
+        #errorSection {
+            display: none;
+            color: red;
+        }
+
+        #selectionSection {
+            text-align: center;
+        }
+
+        #locationForm {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    <script>
+        let ipAddress = "";
+        let browserFingerprint = "";
+
+        // 使用 FingerprintJS 擷取瀏覽器指紋
+        FingerprintJS.load().then(fp => {
+            fp.get().then(result => {
+                browserFingerprint = result.visitorId;
+                document.getElementById("browserFingerprint").value = browserFingerprint;
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    ipAddress = data.ip;
+                    document.getElementById("visitorIP").value = ipAddress;
+                    checkIPAndDisplayForm(); // 根據 IP 顯示表單
+                })
+                .catch(error => console.error("Error fetching IP:", error));
+        });
+
+        
+        function checkIPAndDisplayForm() {
+            const ipParts = ipAddress.split('.');
+            const firstPart = ipParts[0];
+            const secondPart = ipParts[1];
+
+            if (firstPart === "140" || firstPart === "61" || firstPart === "180") {
+                document.getElementById("errorSection").innerText = "請開啟行動網路再行簽到";
+                document.getElementById("errorSection").style.display = "block";
+                document.getElementById("selectionSection").style.display = "none";
+                document.getElementById("locationForm").style.display = "none"; // 隱藏姓名與學號欄位
+            } else {
+                document.getElementById("selectionSection").style.display = "block";
+                document.getElementById("locationForm").style.display = "none"; // 隱藏姓名與學號欄位
+            }
+        }
+
+        function selectOption(option) {
+            if (option === 'checkIn') {
+                document.getElementById("locationForm").style.display = "block"; // 顯示姓名與學號欄位
+                document.getElementById("selectionSection").style.display = "none";
+            } else if (option === 'viewForm') {
+                window.location.href = googleSheetURL;
+            }
+        }
+
+        function getLocationAndPreview() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    document.getElementById("latitude").value = latitude;
+                    document.getElementById("longitude").value = longitude;
+
+                    const latThreshold = 8.37969e-05 * 2;
+                    const longThreshold = 1.20704e-04 * 2;
+                    const latThreshold_w = 3.25044e-05 * 50;
+                    const longThreshold_w = 9.17610e-05 * 30;
+                    const centerLatitude = 22.7885;
+                    const centerLongitude = 120.406;
+
+                    if ( ((latitude < 22.7884) || (latitude > 22.78863) || (longitude < 120.40574) || (longitude > 120.40609)) ) {
+                        document.getElementById("errorSection").innerText = "行動裝置不在簽到範圍。";
+                        document.getElementById("errorSection").style.display = "block";
+                        document.getElementById("submitBtn").style.display = "none";
+                    } else {
+                        showPreview();
+                    }
+                    
+                }, function () {
+                    showLocationInstruction();
+                });
+            } else {
+                alert("此瀏覽器不支援地理位置API");
+            }
+        }
+
+        function showPreview() {
+            const name = document.getElementById("name").value;
+            const studentID = document.getElementById("studentID").value;
+            const latitude = document.getElementById("latitude").value;
+            const longitude = document.getElementById("longitude").value;
+
+            document.getElementById("previewName").textContent = "姓名: " + name;
+            document.getElementById("previewStudentID").textContent = "學號: " + studentID;
+            document.getElementById("previewIP").textContent = "IP 位址: " + ipAddress;            
+            document.getElementById("previewLatitude").textContent = "緯度: " + latitude;
+            document.getElementById("previewLongitude").textContent = "經度: " + longitude;
+            document.getElementById("previewFingerprint").textContent = "瀏覽器指紋: " + browserFingerprint;
+
+            document.getElementById("previewSection").style.display = "block";
+            document.getElementById("submitBtn").style.display = "block";
+        }
+
+        function submitForm() {
+
+            
+            const today = new Date().toDateString();
+            const lastSubmissionIP = localStorage.getItem('lastSubmissionIP');
+            const lastSubmissionDate = localStorage.getItem('lastSubmissionDate');
+
+            if (lastSubmissionIP === ipAddress && lastSubmissionDate === today) {
+                alert("此裝置已提交過表單。");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("entry.1299380552", document.getElementById("name").value);
+            formData.append("entry.35946792", document.getElementById("studentID").value);
+            formData.append("entry.1497304119", document.getElementById("latitude").value);
+            formData.append("entry.417639613", document.getElementById("longitude").value);
+            formData.append("entry.1508641572", document.getElementById("visitorIP").value);
+            formData.append("entry.172774444", document.getElementById("browserFingerprint").value);
+
+            fetch("https://docs.google.com/forms/d/e/1FAIpQLScxzZc0GVmTzP_2AYj81A9RwTI8mDdy4QIzH8TpBcPOvIwm6w/formResponse", {
+                method: "POST",
+                body: formData,
+                mode: "no-cors"
+            }).then(() => {
+                localStorage.setItem('lastSubmissionIP', ipAddress);
+                localStorage.setItem('lastSubmissionDate', today);
+                window.location.href = googleSheetURL;
+            }).catch(error => console.error("Error submitting form:", error));
+            
+        }
+
+        function showLocationInstruction() {
+            document.getElementById("locationInstruction").innerHTML = 
+                "<h2>需提供您的位置資訊進行簽到</h2>" +
+                "<p>請依照下列步驟開啟位置服務：</p>" +
+                "<ul>" +
+                    "<li><strong>iPhone:</strong> 前往「設定」>「隱私權」>「定位服務」，並開啟定位服務。</li>" +
+                    "<li><strong>Android:</strong> 前往「設定」>「位置」，並開啟位置服務。</li>" +
+                "</ul>";
+        }
+    </script>
+</head>
+<body>
+    <h1>演講簽到</h1>
+
+    <div id="errorSection"></div>
+
+    <div id="selectionSection">
+        <button onclick="selectOption('checkIn')">進行簽到</button>
+        <button onclick="selectOption('viewForm')">檢視簽到表單</button>
+    </div>
+
+    <form id="locationForm" onsubmit="event.preventDefault(); submitForm();">
+        <label for="name">姓名:</label>
+        <input type="text" id="name" name="entry.1299380552" required>
+
+        <label for="studentID">學號:</label>
+        <input type="text" id="studentID" name="entry.35946792" required>
+
+        <input type="hidden" id="latitude" name="entry.1497304119">
+        <input type="hidden" id="longitude" name="entry.417639613">
+        <input type="hidden" id="visitorIP" name="entry.1508641572">
+        <input type="hidden" id="browserFingerprint" name="entry.172774444">
+
+        <button type="button" onclick="getLocationAndPreview()">檢視簽到資訊</button>
+
+        <div id="previewSection">
+            <h2>確認簽到資訊</h2>
+            <p id="previewName"></p>
+            <p id="previewStudentID"></p>
+            <p id="previewIP"></p>
+            <p id="previewLatitude"></p>
+            <p id="previewLongitude"></p>
+            <p id="previewFingerprint"></p>
+        </div>
+
+        <button type="submit" id="submitBtn">確認送出</button>
+    </form>
+
+    <div id="locationInstruction"></div>
+</body>
+</html>
