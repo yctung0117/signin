@@ -140,6 +140,7 @@
         });
 
         document.addEventListener("DOMContentLoaded", function() {
+            detectDevice();
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
@@ -150,17 +151,19 @@
                 .catch(error => console.error("Error fetching IP:", error));
         });
 
-        function detectDevice() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const isMobile = /iphone|android.*mobile|windows phone/.test(userAgent);
-            const isTablet = /ipad|android(?!.*mobile)|tablet/.test(userAgent);
-            const hasTouch = navigator.maxTouchPoints > 0;
+function detectDevice() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobile = /iphone|android.*mobile|windows phone/.test(userAgent);
+    const isTablet = /ipad|android(?!.*mobile)|tablet|kindle|silk/.test(userAgent);
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 1;
 
-            if (isTablet || (!isMobile && hasTouch)) {
-                document.getElementById("errorSection").innerText = "請使用手機進行簽到。";
-                document.getElementById("selectionSection").style.display = "none";
-            }
-        }
+    if (isTablet || (!isMobile && isTouchDevice)) {
+        document.getElementById("errorSection").innerText = "請使用手機進行簽到。";
+        document.getElementById("errorSection").style.display = "block";
+        document.getElementById("selectionSection").style.display = "none";
+        document.getElementById("locationForm").style.display = "none";
+    }
+}
         
         function checkIPAndDisplayForm() {
             const ipParts = ipAddress.split('.');
@@ -188,8 +191,6 @@
         }
 
         function getLocationAndPreview() {
-
-            detectDevice();
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
