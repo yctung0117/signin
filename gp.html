@@ -140,7 +140,6 @@
         });
 
         document.addEventListener("DOMContentLoaded", function() {
-            detectDevice();
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
@@ -208,13 +207,26 @@ function detectDevice() {
                     const centerLongitude = 120.406;
 
                     //if ( !((latitude < 22.7884) || (latitude > 22.78863) || (longitude < 120.40574) || (longitude > 120.40609)) ) {
-                    if( false ) {
-                        document.getElementById("errorSection").innerText = "行動裝置不在簽到範圍。";
+                    const userAgent = navigator.userAgent.toLowerCase();
+                    const isMobile = /iphone|android.*mobile|windows phone/.test(userAgent);
+                    const isTablet = /ipad|android(?!.*mobile)|tablet|kindle|silk/.test(userAgent);
+                    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 1;
+
+                    if (isTablet || (!isMobile && isTouchDevice)) {
+                        document.getElementById("errorSection").innerText = "請使用手機進行簽到。";
                         document.getElementById("errorSection").style.display = "block";
                         document.getElementById("submitBtn").style.display = "none";
+                        document.getElementById("selectionSection").style.display = "none";
+                        document.getElementById("locationForm").style.display = "none";
                     } else {
-                        showPreview();
-                    }
+                        if( false ) {
+                            document.getElementById("errorSection").innerText = "行動裝置不在簽到範圍。";
+                            document.getElementById("errorSection").style.display = "block";
+                            document.getElementById("submitBtn").style.display = "none";
+                        } else {
+                            showPreview();
+                        }
+                    }      
                     
                 }, function () {
                     showLocationInstruction();
