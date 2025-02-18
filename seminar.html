@@ -192,7 +192,7 @@
                     const centerLatitude = 22.7885;
                     const centerLongitude = 120.406;
 
-                    if ( ((latitude < 22.7884) || (latitude > 22.78863) || (longitude < 120.40574) || (longitude > 120.40609)) ) {
+                    if ( !((latitude < 22.7884) || (latitude > 22.78863) || (longitude < 120.40574) || (longitude > 120.40609)) ) {
                         document.getElementById("errorSection").innerText = "行動裝置不在簽到範圍。";
                         document.getElementById("errorSection").style.display = "block";
                         document.getElementById("submitBtn").style.display = "none";
