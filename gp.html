@@ -219,7 +219,8 @@ function detectDevice() {
                         document.getElementById("selectionSection").style.display = "none";
                         document.getElementById("locationForm").style.display = "none";
                     } else {
-                        if( false ) {
+                        //if( false ) {
+                        if( !((latitude>22.78793122)&&(latitude<22.78815489)&&(longitude>120.4057642)&&(longitude<120.4061367)) )
                             document.getElementById("errorSection").innerText = "行動裝置不在簽到範圍。";
                             document.getElementById("errorSection").style.display = "block";
                             document.getElementById("submitBtn").style.display = "none";
